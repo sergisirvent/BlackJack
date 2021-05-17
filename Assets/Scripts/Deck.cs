@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class Deck : MonoBehaviour
@@ -12,9 +13,11 @@ public class Deck : MonoBehaviour
     public Text finalMessage;
     public Text probMessage;
 
-    public int[] values = new int[52];
-    int cardIndex = 0;    
-       
+    public List<int> values = new List<int>();
+    
+    int cardIndex = 0;
+    public List<int> barajaMezclada = new List<int>();
+
     private void Awake()
     {    
         InitCardValues();        
@@ -37,10 +40,10 @@ public class Deck : MonoBehaviour
         
             int[] valoresOrdenados = { 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10 };
 
-            for (int i = 0; i < values.Length; i++)
-            {
-                values[i] = valoresOrdenados[i];
-            }
+        for(int i = 0; i< values.Count; i++)
+        {
+            values[i] = valoresOrdenados[i];
+        }
 
         
     }
@@ -52,7 +55,17 @@ public class Deck : MonoBehaviour
          * El método Random.Range(0,n), devuelve un valor entre 0 y n-1
          * Si lo necesitas, puedes definir nuevos arrays.
          */
-        
+
+        for(int i = 0; i < barajaMezclada.Count; i++)
+        {
+            int indiceAleatorio = Random.Range(0, values.Count);
+            barajaMezclada[i] = values[indiceAleatorio];
+            values.RemoveAt(indiceAleatorio);
+            
+            
+        }
+
+        values = barajaMezclada;
 
     }
 

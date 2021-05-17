@@ -86,7 +86,11 @@ public class Deck : MonoBehaviour
 
     void StartGame()
     {
-        
+
+        //activamos todos menos el de play again
+        hitButton.gameObject.SetActive(true);
+        stickButton.gameObject.SetActive(true);
+
         for (int i = 0; i < 2; i++)
         {
             PushPlayer();
@@ -110,7 +114,7 @@ public class Deck : MonoBehaviour
 
         }
 
-        Debug.Log("Puntos del jugador" + player.GetComponent<CardHand>().points );
+        //Debug.Log("Puntos del jugador" + player.GetComponent<CardHand>().points );
     }
 
     private void CalculateProbabilities()
@@ -140,6 +144,7 @@ public class Deck : MonoBehaviour
         player.GetComponent<CardHand>().Push(facesBarajadas[cardIndex], getValorSprite(facesBarajadas[cardIndex])/*,cardCopy*/);
         cardIndex++;
         CalculateProbabilities();
+        
     }       
 
     public void Hit()
@@ -147,13 +152,24 @@ public class Deck : MonoBehaviour
         /*TODO: 
          * Si estamos en la mano inicial, debemos voltear la primera carta del dealer.
          */
+
+        foreach(GameObject go in dealer.GetComponent<CardHand>().cards)
+        {
+            go.GetComponent<CardModel>().ToggleFace(true);
+        }
         
         //Repartimos carta al jugador
         PushPlayer();
-
+        Debug.Log("Puntos del jugador" + player.GetComponent<CardHand>().points);
         /*TODO:
          * Comprobamos si el jugador ya ha perdido y mostramos mensaje
-         */      
+         */
+
+        if (player.GetComponent<CardHand>().points > 21)
+        {
+            desactivarBotones();
+            finalMessage.text = "HAS PERDIDO";
+        }
 
     }
 

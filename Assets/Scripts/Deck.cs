@@ -160,11 +160,13 @@ public class Deck : MonoBehaviour
         
         //Repartimos carta al jugador
         PushPlayer();
-        Debug.Log("Puntos del jugador" + player.GetComponent<CardHand>().points);
+
+        //Debug.Log("Puntos del jugador" + player.GetComponent<CardHand>().points);
         /*TODO:
          * Comprobamos si el jugador ya ha perdido y mostramos mensaje
          */
 
+        //si se pasa de 21 pierde
         if (player.GetComponent<CardHand>().points > 21)
         {
             desactivarBotones();
@@ -183,8 +185,31 @@ public class Deck : MonoBehaviour
          * Repartimos cartas al dealer si tiene 16 puntos o menos
          * El dealer se planta al obtener 17 puntos o más
          * Mostramos el mensaje del que ha ganado
-         */                
-         
+         */
+
+        foreach (GameObject go in dealer.GetComponent<CardHand>().cards)
+        {
+            go.GetComponent<CardModel>().ToggleFace(true);
+        }
+
+        if (dealer.GetComponent<CardHand>().points <= 16)
+        {
+            while(dealer.GetComponent<CardHand>().points <= 17)
+            {
+                PushDealer();
+            }
+            
+        }
+        if(dealer.GetComponent<CardHand>().points > player.GetComponent<CardHand>().points && dealer.GetComponent<CardHand>().points <= 21)
+        {
+            finalMessage.text = "HA GANADO EL DEALER";
+            desactivarBotones();
+        }
+        else
+        {
+            finalMessage.text = "HAS GANADO";
+            desactivarBotones();
+        }
     }
 
     public void PlayAgain()

@@ -153,11 +153,6 @@ public class Deck : MonoBehaviour
          * Si estamos en la mano inicial, debemos voltear la primera carta del dealer.
          */
 
-        foreach(GameObject go in dealer.GetComponent<CardHand>().cards)
-        {
-            go.GetComponent<CardModel>().ToggleFace(true);
-        }
-        
         //Repartimos carta al jugador
         PushPlayer();
 
@@ -166,10 +161,19 @@ public class Deck : MonoBehaviour
          * Comprobamos si el jugador ya ha perdido y mostramos mensaje
          */
 
-        //si se pasa de 21 pierde
+        if(player.GetComponent<CardHand>().points == 21)
+        {
+            Stand();
+        }
+
+        //si se pasa de 21 pierde el jugador
         if (player.GetComponent<CardHand>().points > 21)
         {
             desactivarBotones();
+            foreach (GameObject go in dealer.GetComponent<CardHand>().cards)
+            {
+                go.GetComponent<CardModel>().ToggleFace(true);
+            }
             finalMessage.text = "HAS PERDIDO";
         }
 
@@ -187,27 +191,55 @@ public class Deck : MonoBehaviour
          * Mostramos el mensaje del que ha ganado
          */
 
-        foreach (GameObject go in dealer.GetComponent<CardHand>().cards)
-        {
-            go.GetComponent<CardModel>().ToggleFace(true);
-        }
+        
 
         if (dealer.GetComponent<CardHand>().points <= 16)
         {
+            //si el dealer tiene menos de 16 pide
             while(dealer.GetComponent<CardHand>().points <= 17)
             {
+                //mientras el dealer tenga menos de 17 o 17 pide
                 PushDealer();
             }
             
         }
         if(dealer.GetComponent<CardHand>().points > player.GetComponent<CardHand>().points && dealer.GetComponent<CardHand>().points <= 21)
         {
+            //si el dealer gana (tiene mas puntos y no se pasa de 21)
             finalMessage.text = "HA GANADO EL DEALER";
+            foreach (GameObject go in dealer.GetComponent<CardHand>().cards)
+            {
+                go.GetComponent<CardModel>().ToggleFace(true);
+            }
+            desactivarBotones();
+        }
+        else if(dealer.GetComponent<CardHand>().points == player.GetComponent<CardHand>().points)
+        {
+            //si el dealer y el jugador obtienen la misma puntuacion
+            finalMessage.text = "EMPATE";
+            foreach (GameObject go in dealer.GetComponent<CardHand>().cards)
+            {
+                go.GetComponent<CardModel>().ToggleFace(true);
+            }
             desactivarBotones();
         }
         else
         {
-            finalMessage.text = "HAS GANADO";
+            //si el jugador tiene mas puntos y no se pasa de 21
+
+            if(player.GetComponent<CardHand>().points == 21)
+            {
+                finalMessage.text = "HAS GANADO CON BLACKJACK";
+            }
+            else
+            {
+                finalMessage.text = "HAS GANADO";
+            }
+            
+            foreach (GameObject go in dealer.GetComponent<CardHand>().cards)
+            {
+                go.GetComponent<CardModel>().ToggleFace(true);
+            }
             desactivarBotones();
         }
     }
@@ -224,7 +256,7 @@ public class Deck : MonoBehaviour
         StartGame();
     }
 
-    //metodo de mezclar lista
+    //Metodo de mezclar la baraja de sprites clonada
 
     public Sprite[] mezclarBarajaFaces<Sprite>(Sprite[] array)
     {
@@ -242,6 +274,9 @@ public class Deck : MonoBehaviour
         return array;
     }
 
+    /*
+     *Metodo para obtener el valor de un sprite
+     */
     public int getValorSprite(Sprite sprite)
     {
         
@@ -258,6 +293,8 @@ public class Deck : MonoBehaviour
         }
         return valor;
     }
+
+    //metodo para desactivar los botones restantes cuando se acaba el juego
     public void desactivarBotones()
     {
         //desactivamos todos menos el de play again

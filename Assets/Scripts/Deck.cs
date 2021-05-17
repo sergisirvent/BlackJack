@@ -7,9 +7,11 @@ public class Deck : MonoBehaviour
     public Sprite[] faces;
     public GameObject dealer;
     public GameObject player;
+
     public Button hitButton;
     public Button stickButton;
     public Button playAgainButton;
+
     public Text finalMessage;
     public Text probMessage;
 
@@ -61,28 +63,30 @@ public class Deck : MonoBehaviour
          * Si lo necesitas, puedes definir nuevos arrays.
          */
 
+        //copio la baraja de faces en un clon que despues barajaré
+        facesBarajadas = new Sprite[52];
 
-        for (int i = 0; i < faces.Length; i++)
+        for(int i = 0;i< 52 ; i++)
         {
             facesBarajadas[i] = faces[i];
         }
 
+        
+        //mezclo el clon de faces
         facesBarajadas = mezclarBarajaFaces(facesBarajadas);
+
+       /*
         int valor = getValorSprite(facesBarajadas[0]);
         Debug.Log(valor);
+        */
         
-        
-
-        
-
-
-
 
 
     }
 
     void StartGame()
     {
+        
         for (int i = 0; i < 2; i++)
         {
             PushPlayer();
@@ -90,7 +94,23 @@ public class Deck : MonoBehaviour
             /*TODO:
              * Si alguno de los dos obtiene Blackjack, termina el juego y mostramos mensaje
              */
+
+            if(player.GetComponent<CardHand>().points == 21)
+            {
+                finalMessage.text = "BlackJack";
+                desactivarBotones();
+                
+            }
+            if(dealer.GetComponent<CardHand>().points == 21)
+            {
+                finalMessage.text = "BlackJack";
+                desactivarBotones();
+            }
+            
+
         }
+
+        Debug.Log("Puntos del jugador" + player.GetComponent<CardHand>().points );
     }
 
     private void CalculateProbabilities()
@@ -108,7 +128,7 @@ public class Deck : MonoBehaviour
         /*TODO:
          * Dependiendo de cómo se implemente ShuffleCards, es posible que haya que cambiar el índice.
          */
-        dealer.GetComponent<CardHand>().Push(faces[cardIndex],values[cardIndex]);
+        dealer.GetComponent<CardHand>().Push(facesBarajadas[cardIndex], getValorSprite(facesBarajadas[cardIndex]));
         cardIndex++;        
     }
 
@@ -117,7 +137,7 @@ public class Deck : MonoBehaviour
         /*TODO:
          * Dependiendo de cómo se implemente ShuffleCards, es posible que haya que cambiar el índice.
          */
-        player.GetComponent<CardHand>().Push(faces[cardIndex], values[cardIndex]/*,cardCopy*/);
+        player.GetComponent<CardHand>().Push(facesBarajadas[cardIndex], getValorSprite(facesBarajadas[cardIndex])/*,cardCopy*/);
         cardIndex++;
         CalculateProbabilities();
     }       
@@ -197,5 +217,10 @@ public class Deck : MonoBehaviour
         }
         return valor;
     }
-
+    public void desactivarBotones()
+    {
+        //desactivamos todos menos el de play again
+        hitButton.gameObject.SetActive(false);
+        stickButton.gameObject.SetActive(false);
+    }
 }

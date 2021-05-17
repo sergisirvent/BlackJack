@@ -13,10 +13,15 @@ public class Deck : MonoBehaviour
     public Text finalMessage;
     public Text probMessage;
 
-    public List<int> values = new List<int>();
+    public int[] values = new int[52];
     
     int cardIndex = 0;
-    public List<int> barajaMezclada = new List<int>();
+
+    public Sprite[] facesBarajadas ;
+    System.Random objetoRandom = new System.Random();
+
+
+
 
     private void Awake()
     {    
@@ -40,7 +45,7 @@ public class Deck : MonoBehaviour
         
             int[] valoresOrdenados = { 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10 };
 
-        for(int i = 0; i< values.Count; i++)
+        for(int i = 0; i< values.Length; i++)
         {
             values[i] = valoresOrdenados[i];
         }
@@ -56,16 +61,23 @@ public class Deck : MonoBehaviour
          * Si lo necesitas, puedes definir nuevos arrays.
          */
 
-        for(int i = 0; i < barajaMezclada.Count; i++)
+
+        for (int i = 0; i < faces.Length; i++)
         {
-            int indiceAleatorio = Random.Range(0, values.Count);
-            barajaMezclada[i] = values[indiceAleatorio];
-            values.RemoveAt(indiceAleatorio);
-            
-            
+            facesBarajadas[i] = faces[i];
         }
 
-        values = barajaMezclada;
+        facesBarajadas = mezclarBarajaFaces(facesBarajadas);
+        int valor = getValorSprite(facesBarajadas[0]);
+        Debug.Log(valor);
+        
+        
+
+        
+
+
+
+
 
     }
 
@@ -150,5 +162,40 @@ public class Deck : MonoBehaviour
         ShuffleCards();
         StartGame();
     }
-    
+
+    //metodo de mezclar lista
+
+    public Sprite[] mezclarBarajaFaces<Sprite>(Sprite[] array)
+    {
+        
+        //var random = _random;
+        for (int i = array.Length; i > 1; i--)
+        {
+            // Pick random element to swap.
+            int j = objetoRandom.Next(i); // 0 <= j <= i-1
+                                    // Swap.
+            Sprite auxiliar  = array[j];
+            array[j] = array[i - 1];
+            array[i - 1] = auxiliar;
+        }
+        return array;
+    }
+
+    public int getValorSprite(Sprite sprite)
+    {
+        
+        int valor = -1;
+        for (int i = 0; i < faces.Length ; i++)
+        {
+            if (faces[i] == sprite)
+            {
+                valor = values[i];
+
+               
+            }
+
+        }
+        return valor;
+    }
+
 }

@@ -22,7 +22,10 @@ public class Deck : MonoBehaviour
     public Sprite[] facesBarajadas ;
     System.Random objetoRandom = new System.Random();
 
-
+    public int banca ;
+    public int apuestaActual ;
+    public Text miBanca;
+    public Text apuestaText;
 
 
     private void Awake()
@@ -34,9 +37,30 @@ public class Deck : MonoBehaviour
     private void Start()
     {
         ShuffleCards();
-        StartGame();        
-    }
+        tiempoDeApuesta();
 
+        miBanca.text = "Mi banca: " + banca;
+        finalMessage.text = "Apuesta una cantidad";
+        banca = 1000;
+        apuestaActual = 0;
+
+        hitButton.gameObject.SetActive(false);
+        stickButton.gameObject.SetActive(false);
+        playAgainButton.gameObject.SetActive(false);
+        
+    }
+    private void Update()
+    {
+        
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            sumarApuesta();
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            restarApuesta();
+        }
+    }
     private void InitCardValues()
     {
         /*TODO:
@@ -84,12 +108,14 @@ public class Deck : MonoBehaviour
 
     }
 
-    void StartGame()
+    public void StartGame()
     {
-
+        
         //activamos todos menos el de play again
         hitButton.gameObject.SetActive(true);
         stickButton.gameObject.SetActive(true);
+        playAgainButton.gameObject.SetActive(true);
+        //apuestaActual = 0;
 
         for (int i = 0; i < 2; i++)
         {
@@ -101,13 +127,18 @@ public class Deck : MonoBehaviour
 
             if(player.GetComponent<CardHand>().points == 21)
             {
-                finalMessage.text = "BlackJack";
+                finalMessage.text = "Has Ganado con BlackJack";
                 desactivarBotones();
+                banca = banca + (apuestaActual * 2);
+                miBanca.text = "Mi banca: " + banca.ToString();
                 
+
+
             }
             if(dealer.GetComponent<CardHand>().points == 21)
             {
-                finalMessage.text = "BlackJack";
+                finalMessage.text = "BlackJack del Dealer";
+                miBanca.text = "Mi banca: " + banca.ToString();
                 desactivarBotones();
             }
             
@@ -175,6 +206,8 @@ public class Deck : MonoBehaviour
                 go.GetComponent<CardModel>().ToggleFace(true);
             }
             finalMessage.text = "HAS PERDIDO";
+            apuestaActual = 0;
+            
         }
 
     }
@@ -212,6 +245,8 @@ public class Deck : MonoBehaviour
                 go.GetComponent<CardModel>().ToggleFace(true);
             }
             desactivarBotones();
+            miBanca.text = "Mi banca: " + banca.ToString();
+            apuestaActual = 0;
         }
         else if(dealer.GetComponent<CardHand>().points == player.GetComponent<CardHand>().points)
         {
@@ -222,6 +257,10 @@ public class Deck : MonoBehaviour
                 go.GetComponent<CardModel>().ToggleFace(true);
             }
             desactivarBotones();
+            banca = banca + apuestaActual;
+            miBanca.text = "Mi banca: " + banca.ToString();
+            
+            apuestaActual = 0;
         }
         else
         {
@@ -230,10 +269,18 @@ public class Deck : MonoBehaviour
             if(player.GetComponent<CardHand>().points == 21)
             {
                 finalMessage.text = "HAS GANADO CON BLACKJACK";
+                banca = banca + (apuestaActual*2);
+                miBanca.text = "Mi banca: " + banca.ToString();
+                
+                apuestaActual = 0;
             }
             else
             {
                 finalMessage.text = "HAS GANADO";
+                banca = banca + (apuestaActual * 2);
+                miBanca.text = "Mi banca: " + banca.ToString();
+               
+                apuestaActual = 0;
             }
             
             foreach (GameObject go in dealer.GetComponent<CardHand>().cards)
@@ -253,7 +300,7 @@ public class Deck : MonoBehaviour
         dealer.GetComponent<CardHand>().Clear();          
         cardIndex = 0;
         ShuffleCards();
-        StartGame();
+        tiempoDeApuesta();
     }
 
     //Metodo de mezclar la baraja de sprites clonada
@@ -300,5 +347,50 @@ public class Deck : MonoBehaviour
         //desactivamos todos menos el de play again
         hitButton.gameObject.SetActive(false);
         stickButton.gameObject.SetActive(false);
+    }
+
+    public void sumarApuesta()
+    {
+        if(banca >= 10)
+        {
+            apuestaActual = apuestaActual + 10;
+            banca = banca - 10;
+
+            apuestaText.text = apuestaActual.ToString();
+            miBanca.text = "Mi banca: " + banca;
+        }
+        
+
+    }
+    public void restarApuesta()
+    {
+        if (apuestaActual >= 10)
+        {
+            apuestaActual = apuestaActual - 10;
+            banca = banca + 10;
+
+            apuestaText.text = apuestaActual.ToString();
+            miBanca.text = "Mi banca: " + banca;
+        }
+        
+    }
+
+    public void onClickBotonApuesta()
+    {
+        if (apuestaActual >= 10)
+        {
+            ShuffleCards();
+            StartGame();
+            apuestaText.text = "0";
+            finalMessage.text = "";
+        }
+        
+    }
+    public void tiempoDeApuesta()
+    {
+        hitButton.gameObject.SetActive(false);
+        stickButton.gameObject.SetActive(false);
+        playAgainButton.gameObject.SetActive(false);
+
     }
 }

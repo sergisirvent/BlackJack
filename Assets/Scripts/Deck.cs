@@ -11,9 +11,12 @@ public class Deck : MonoBehaviour
     public Button hitButton;
     public Button stickButton;
     public Button playAgainButton;
+    public Button botonApuesta;
 
     public Text finalMessage;
     public Text probMessage;
+    public Text probMessage2;
+    public Text probMessage3;
 
     public int[] values = new int[52];
     
@@ -41,6 +44,9 @@ public class Deck : MonoBehaviour
 
         miBanca.text = "Mi banca: " + banca;
         finalMessage.text = "Apuesta una cantidad";
+        probMessage.text = "";
+        probMessage2.text = "";
+        probMessage3.text = "";
         banca = 1000;
         apuestaActual = 0;
 
@@ -162,28 +168,74 @@ public class Deck : MonoBehaviour
          * - Probabilidad de que el jugador obtenga más de 21 si pide una carta          
          */
 
-        //PRIMERA PROBABILIDAD
 
         int valorCartaDestapada = dealer.GetComponent<CardHand>().cards[1].GetComponent<CardModel>().value;
-        int valorManoJugador=player.GetComponent<CardHand>().points;
-        decimal casosProbables = 0;
-        
-        decimal probabilidad ;
+        int valorManoJugador = player.GetComponent<CardHand>().points;
 
-        for(int i = 0; i < facesBarajadas.Length; i++)
-        {
-            int valorCarta = getValorSprite(facesBarajadas[i]);
-            if(valorCarta + valorCartaDestapada > valorManoJugador && valorCarta+valorCartaDestapada <= 21)
-            {
-                casosProbables++;
-            }
-        }
-        decimal cartasEnJuego = 52 - cardIndex;
-        probabilidad = decimal.Round((casosProbables / cartasEnJuego)*100,2);
-        probMessage.text = "Probabilidad de mejor mano del dealer: "+probabilidad.ToString() + "%";
+        //PRIMERA PROBABILIDAD
 
+
+        decimal casosProbablesManoDealerSuperior = 0;
+        decimal primeraProbabilidad ;
 
         //SEGUNDA PROBABILIDAD
+
+        decimal casosFavorablesHitJugador = 0;
+        decimal segundaProbabilidad;
+
+        //TERCERA PROBABILIDAD
+        decimal casosSePasaDeVeintiuno = 0;
+        decimal terceraProbabilidad;
+
+        for (int i = 0; i < facesBarajadas.Length; i++)
+        {
+            int valorCarta = getValorSprite(facesBarajadas[i]);
+            //condicion primera probabilidad
+            if(valorCarta + valorCartaDestapada > valorManoJugador && valorCarta+valorCartaDestapada <= 21)
+            {
+                casosProbablesManoDealerSuperior++;
+            }
+            //condicion segunda probabilidad
+            if(valorCarta + valorManoJugador >= 17 && valorCarta + valorManoJugador < 21)
+            {
+                
+                casosFavorablesHitJugador++;
+            }
+            //condicion tercera probabilidad
+            if(valorCarta + valorManoJugador > 21)
+            {
+                casosSePasaDeVeintiuno++;
+            }
+
+        }
+        decimal cartasEnJuego = 52 - cardIndex;
+        primeraProbabilidad = decimal.Round((casosProbablesManoDealerSuperior / cartasEnJuego)*100,2);
+        segundaProbabilidad = decimal.Round((casosFavorablesHitJugador / cartasEnJuego) * 100, 2);
+        terceraProbabilidad = decimal.Round((casosSePasaDeVeintiuno / cartasEnJuego) * 100, 2);
+
+        if (primeraProbabilidad>100)
+        {
+            probMessage.text = "Probabilidad de mejor mano del dealer: " + 100 + "%";
+        }
+        else
+        {
+            probMessage.text = "Probabilidad de mejor mano del dealer: " + primeraProbabilidad.ToString() + "%";
+        }
+        
+        probMessage2.text = "Probabilidad de obtener entre un 17 y un 21 si pides una carta: " + segundaProbabilidad.ToString() + "%";
+
+        probMessage3.text = "Probabilidad de pasarte de 21 si pides otra carta " + terceraProbabilidad.ToString() + "%";
+
+        if (terceraProbabilidad > 100)
+        {
+            probMessage3.text = "Probabilidad de pasarte de 21 si pides otra carta " + 100 + "%";
+        }
+        else
+        {
+            probMessage3.text = "Probabilidad de pasarte de 21 si pides otra carta " + terceraProbabilidad.ToString() + "%";
+        }
+
+
 
 
 
@@ -413,12 +465,13 @@ public class Deck : MonoBehaviour
 
     public void onClickBotonApuesta()
     {
-        if (apuestaActual >= 10)
+        if (apuestaActual >= 10 )
         {
             ShuffleCards();
             StartGame();
             apuestaText.text = "0";
             finalMessage.text = "";
+            botonApuesta.interactable = false;
         }
         
     }
@@ -427,6 +480,7 @@ public class Deck : MonoBehaviour
         hitButton.gameObject.SetActive(false);
         stickButton.gameObject.SetActive(false);
         playAgainButton.gameObject.SetActive(false);
+        botonApuesta.interactable = true;
 
     }
 }

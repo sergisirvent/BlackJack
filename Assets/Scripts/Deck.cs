@@ -8,23 +8,31 @@ public class Deck : MonoBehaviour
     public GameObject dealer;
     public GameObject player;
 
+    //botones de la interfaz
     public Button hitButton;
     public Button stickButton;
     public Button playAgainButton;
     public Button botonApuesta;
 
+    //mensajes a mostrar
     public Text finalMessage;
     public Text probMessage;
     public Text probMessage2;
     public Text probMessage3;
 
+    //array de valores
     public int[] values = new int[52];
     
+    //posicion de las cartas en el juego
     int cardIndex = 0;
 
+    //array clonada de sprites , la cual desordenaremos
     public Sprite[] facesBarajadas ;
+
+    //objeto que nos permite acceder a los metodos random
     System.Random objetoRandom = new System.Random();
 
+    //Sistema de apuestas
     public int banca ;
     public int apuestaActual ;
     public Text miBanca;
@@ -39,25 +47,29 @@ public class Deck : MonoBehaviour
 
     private void Start()
     {
+        //mezclamos
         ShuffleCards();
+        //indicamos al usuario que tiene que apostar
         tiempoDeApuesta();
 
-        miBanca.text = "Mi banca: " + banca;
+        //sistema de apuestas 
         finalMessage.text = "Apuesta una cantidad";
-        probMessage.text = "";
-        probMessage2.text = "";
-        probMessage3.text = "";
+        miBanca.text = "Mi banca: " + banca;
         banca = 1000;
         apuestaActual = 0;
-
-        hitButton.gameObject.SetActive(false);
-        stickButton.gameObject.SetActive(false);
+        //sistema de probabilidades
+         probMessage.text = "";
+        probMessage2.text = "";
+        probMessage3.text = "";
+        
+        //deshabilitamos los botones no necesarios
+        desactivarBotones();
         playAgainButton.gameObject.SetActive(false);
         
     }
     private void Update()
     {
-        
+        //apostar con las flechas
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             sumarApuesta();
@@ -75,8 +87,10 @@ public class Deck : MonoBehaviour
          * Por ejemplo, si en faces[1] hay un 2 de corazones, en values[1] debería haber un 2.
          */
         
-            int[] valoresOrdenados = { 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10 };
+        //array con los valores ordenados
+        int[] valoresOrdenados = { 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10 };
 
+        //rellenamos el array de valores con los valores ordenados
         for(int i = 0; i< values.Length; i++)
         {
             values[i] = valoresOrdenados[i];
@@ -120,13 +134,15 @@ public class Deck : MonoBehaviour
         //activamos todos menos el de play again
         hitButton.gameObject.SetActive(true);
         stickButton.gameObject.SetActive(true);
-        playAgainButton.gameObject.SetActive(true);
-        //apuestaActual = 0;
+        playAgainButton.gameObject.SetActive(false);
+
+        //repartimos cartas al dealer
         for(int i = 0; i < 2; i++)
         {
             PushDealer();
         }
 
+        //repartimos cartas al jugador
         for (int i = 0; i < 2; i++)
         {
             
@@ -139,10 +155,12 @@ public class Deck : MonoBehaviour
             if (player.GetComponent<CardHand>().points == 21)
             {
                 finalMessage.text = "Has Ganado con BlackJack";
+                
                 desactivarBotones();
                 banca = banca + (apuestaActual * 2);
                 miBanca.text = "Mi banca: " + banca.ToString();
-                
+                playAgainButton.gameObject.SetActive(true);
+
 
 
             }
@@ -150,6 +168,7 @@ public class Deck : MonoBehaviour
             {
                 finalMessage.text = "BlackJack del Dealer";
                 miBanca.text = "Mi banca: " + banca.ToString();
+                playAgainButton.gameObject.SetActive(true);
                 desactivarBotones();
             }
             
@@ -168,15 +187,24 @@ public class Deck : MonoBehaviour
          * - Probabilidad de que el jugador obtenga más de 21 si pide una carta          
          */
 
-
+        //accedemos a los valores de la mano del jugador y de la carta descubierta del dealer
         int valorCartaDestapada = dealer.GetComponent<CardHand>().cards[1].GetComponent<CardModel>().value;
         int valorManoJugador = player.GetComponent<CardHand>().points;
 
+        //Averiguamos los ases que quedan en la baraja
+        int asesRestantes = 0;
+        for(int i = cardIndex; i < facesBarajadas.Length; i++)
+        {
+            if(getValorSprite(facesBarajadas[i]) == 11)
+            {
+                asesRestantes++;
+            }
+        }
+
         //PRIMERA PROBABILIDAD
 
-
         decimal casosProbablesManoDealerSuperior = 0;
-        decimal primeraProbabilidad ;
+        decimal primeraProbabilidad;
 
         //SEGUNDA PROBABILIDAD
 
@@ -187,7 +215,8 @@ public class Deck : MonoBehaviour
         decimal casosSePasaDeVeintiuno = 0;
         decimal terceraProbabilidad;
 
-        for (int i = 0; i < facesBarajadas.Length; i++)
+        //bucle que recorre las cartas restantes de la baraja que no estan en juego
+        for (int i = cardIndex; i < facesBarajadas.Length; i++)
         {
             int valorCarta = getValorSprite(facesBarajadas[i]);
             //condicion primera probabilidad
@@ -196,7 +225,7 @@ public class Deck : MonoBehaviour
                 casosProbablesManoDealerSuperior++;
             }
             //condicion segunda probabilidad
-            if(valorCarta + valorManoJugador >= 17 && valorCarta + valorManoJugador < 21)
+            if(valorCarta + valorManoJugador >= 17 && valorCarta + valorManoJugador <= 21)
             {
                 
                 casosFavorablesHitJugador++;
@@ -208,23 +237,47 @@ public class Deck : MonoBehaviour
             }
 
         }
+        //calculamos las probabilidades 
         decimal cartasEnJuego = 52 - cardIndex;
         primeraProbabilidad = decimal.Round((casosProbablesManoDealerSuperior / cartasEnJuego)*100,2);
         segundaProbabilidad = decimal.Round((casosFavorablesHitJugador / cartasEnJuego) * 100, 2);
         terceraProbabilidad = decimal.Round((casosSePasaDeVeintiuno / cartasEnJuego) * 100, 2);
 
-        if (primeraProbabilidad>100)
+
+        //editamos los textos de las probabilidades
+        if(primeraProbabilidad == 0)
         {
-            probMessage.text = "Probabilidad de mejor mano del dealer: " + 100 + "%";
+            if(asesRestantes > 0)
+            {
+                probMessage.text = "Probabilidad de mejor mano del dealer: " + asesRestantes*(1/52) + "%";
+            }
         }
         else
         {
-            probMessage.text = "Probabilidad de mejor mano del dealer: " + primeraProbabilidad.ToString() + "%";
+            if (primeraProbabilidad > 100)
+            {
+                probMessage.text = "Probabilidad de mejor mano del dealer: " + 100 + "%";
+            }
+            else
+            {
+                probMessage.text = "Probabilidad de mejor mano del dealer: " + primeraProbabilidad.ToString() + "%";
+            }
         }
         
-        probMessage2.text = "Probabilidad de obtener entre un 17 y un 21 si pides una carta: " + segundaProbabilidad.ToString() + "%";
+        if(segundaProbabilidad == 0)
+        {
+            if (asesRestantes > 0)
+            {
+                probMessage2.text = "Probabilidad de obtener entre un 17 y un 21 si pides una carta: " + asesRestantes * (1 / 52) + "%";
+            }
+        }
+        else
+        {
+            probMessage2.text = "Probabilidad de obtener entre un 17 y un 21 si pides una carta: " + segundaProbabilidad.ToString() + "%";
+        }
+       
 
-        probMessage3.text = "Probabilidad de pasarte de 21 si pides otra carta " + terceraProbabilidad.ToString() + "%";
+        
 
         if (terceraProbabilidad > 100)
         {
@@ -232,7 +285,7 @@ public class Deck : MonoBehaviour
         }
         else
         {
-            probMessage3.text = "Probabilidad de pasarte de 21 si pides otra carta " + terceraProbabilidad.ToString() + "%";
+            probMessage3.text = "Probabilidad de pasarte de 21 si pides otra carta: " + terceraProbabilidad.ToString() + "%";
         }
 
 
@@ -294,6 +347,7 @@ public class Deck : MonoBehaviour
                 go.GetComponent<CardModel>().ToggleFace(true);
             }
             finalMessage.text = "HAS PERDIDO";
+            playAgainButton.gameObject.SetActive(true);
             apuestaActual = 0;
             
         }
@@ -335,6 +389,7 @@ public class Deck : MonoBehaviour
             desactivarBotones();
             miBanca.text = "Mi banca: " + banca.ToString();
             apuestaActual = 0;
+            playAgainButton.gameObject.SetActive(true);
         }
         else if(dealer.GetComponent<CardHand>().points == player.GetComponent<CardHand>().points)
         {
@@ -347,7 +402,7 @@ public class Deck : MonoBehaviour
             desactivarBotones();
             banca = banca + apuestaActual;
             miBanca.text = "Mi banca: " + banca.ToString();
-            
+            playAgainButton.gameObject.SetActive(true);
             apuestaActual = 0;
         }
         else
@@ -359,7 +414,7 @@ public class Deck : MonoBehaviour
                 finalMessage.text = "HAS GANADO CON BLACKJACK";
                 banca = banca + (apuestaActual*2);
                 miBanca.text = "Mi banca: " + banca.ToString();
-                
+                playAgainButton.gameObject.SetActive(true);
                 apuestaActual = 0;
             }
             else
@@ -367,7 +422,7 @@ public class Deck : MonoBehaviour
                 finalMessage.text = "HAS GANADO";
                 banca = banca + (apuestaActual * 2);
                 miBanca.text = "Mi banca: " + banca.ToString();
-               
+                playAgainButton.gameObject.SetActive(true);
                 apuestaActual = 0;
             }
             
@@ -390,6 +445,14 @@ public class Deck : MonoBehaviour
         ShuffleCards();
         tiempoDeApuesta();
     }
+
+
+    /**
+     * 
+     * 
+     * METODOS AÑADIDOS
+     * 
+     */
 
     //Metodo de mezclar la baraja de sprites clonada
 
@@ -437,6 +500,7 @@ public class Deck : MonoBehaviour
         stickButton.gameObject.SetActive(false);
     }
 
+    //METODOS PARA AUMENTAR O DISMINUUIR LA APUESTA
     public void sumarApuesta()
     {
         if(banca >= 10)
@@ -446,8 +510,9 @@ public class Deck : MonoBehaviour
 
             apuestaText.text = apuestaActual.ToString();
             miBanca.text = "Mi banca: " + banca;
+            finalMessage.text = "";
         }
-        
+
 
     }
     public void restarApuesta()
@@ -459,10 +524,12 @@ public class Deck : MonoBehaviour
 
             apuestaText.text = apuestaActual.ToString();
             miBanca.text = "Mi banca: " + banca;
+            finalMessage.text = "";
         }
         
     }
 
+    //ON CLICK DEL BOTON APUESTA
     public void onClickBotonApuesta()
     {
         if (apuestaActual >= 10 )
@@ -470,11 +537,12 @@ public class Deck : MonoBehaviour
             ShuffleCards();
             StartGame();
             apuestaText.text = "0";
-            finalMessage.text = "";
+            //finalMessage.text = "";
             botonApuesta.interactable = false;
         }
         
     }
+    //ESTE METODO CONTROLA EL ESTADO DE LOS BOTONES CUANDO EL JUGADOR ESTA APOSTANDO
     public void tiempoDeApuesta()
     {
         hitButton.gameObject.SetActive(false);

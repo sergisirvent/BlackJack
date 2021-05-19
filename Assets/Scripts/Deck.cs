@@ -116,16 +116,21 @@ public class Deck : MonoBehaviour
         stickButton.gameObject.SetActive(true);
         playAgainButton.gameObject.SetActive(true);
         //apuestaActual = 0;
+        for(int i = 0; i < 2; i++)
+        {
+            PushDealer();
+        }
 
         for (int i = 0; i < 2; i++)
         {
+            
+           
             PushPlayer();
-            PushDealer();
             /*TODO:
              * Si alguno de los dos obtiene Blackjack, termina el juego y mostramos mensaje
              */
 
-            if(player.GetComponent<CardHand>().points == 21)
+            if (player.GetComponent<CardHand>().points == 21)
             {
                 finalMessage.text = "Has Ganado con BlackJack";
                 desactivarBotones();
@@ -156,6 +161,33 @@ public class Deck : MonoBehaviour
          * - Probabilidad de que el jugador obtenga entre un 17 y un 21 si pide una carta
          * - Probabilidad de que el jugador obtenga más de 21 si pide una carta          
          */
+
+        //PRIMERA PROBABILIDAD
+
+        int valorCartaDestapada = dealer.GetComponent<CardHand>().cards[1].GetComponent<CardModel>().value;
+        int valorManoJugador=player.GetComponent<CardHand>().points;
+        decimal casosProbables = 0;
+        
+        decimal probabilidad ;
+
+        for(int i = 0; i < facesBarajadas.Length; i++)
+        {
+            int valorCarta = getValorSprite(facesBarajadas[i]);
+            if(valorCarta + valorCartaDestapada > valorManoJugador && valorCarta+valorCartaDestapada <= 21)
+            {
+                casosProbables++;
+            }
+        }
+        decimal cartasEnJuego = 52 - cardIndex;
+        probabilidad = decimal.Round((casosProbables / cartasEnJuego)*100,2);
+        probMessage.text = "Probabilidad de mejor mano del dealer: "+probabilidad.ToString() + "%";
+
+
+        //SEGUNDA PROBABILIDAD
+
+
+
+
     }
 
     void PushDealer()
@@ -174,7 +206,11 @@ public class Deck : MonoBehaviour
          */
         player.GetComponent<CardHand>().Push(facesBarajadas[cardIndex], getValorSprite(facesBarajadas[cardIndex])/*,cardCopy*/);
         cardIndex++;
-        CalculateProbabilities();
+        if(cardIndex > 3)
+        {
+            CalculateProbabilities();
+        }
+       
         
     }       
 
